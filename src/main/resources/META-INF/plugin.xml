@@ -1,0 +1,19 @@
+<idea-plugin>
+    <id>com.example.antigravity</id>
+    <name>Antigravity</name>
+    <vendor>Antigravity</vendor>
+
+    <description><![CDATA[
+    Antigravity plugin for Rider.
+    ]]></description>
+
+    <depends>com.intellij.modules.platform</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <toolWindow id="Antigravity" secondary="true" anchor="right" icon="/icons/antigravity.png"
+                    factoryClass="com.example.antigravity.AntigravityToolWindowFactory"/>
+        <applicationService serviceImplementation="com.example.antigravity.AuthState"/>
+        <applicationService serviceImplementation="com.example.antigravity.GoogleAuthService"/>
+        <applicationService serviceImplementation="com.example.antigravity.AntigravityService"/>
+    </extensions>
+</idea-plugin>

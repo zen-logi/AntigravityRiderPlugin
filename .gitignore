@@ -1,0 +1,27 @@
+# Gradle files
+.gradle/
+build/
+bin/
+!gradle/wrapper/gradle-wrapper.jar
+
+# Kotlin
+.kotlin/
+
+# IntelliJ / Rider
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+
+# Local configuration & Secrets
+# IMPORTANT: gradle.properties contains Google OAuth secrets
+gradle.properties
+local.properties
+
+# Temporary scripts
+resize_icon.ps1
+
+# OS specific
+.DS_Store
+Thumbs.db
