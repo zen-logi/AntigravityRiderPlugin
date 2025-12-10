@@ -8,6 +8,10 @@ plugins {
 group = "com.example.antigravity"
 version = "1.0.0"
 
+kotlin {
+    jvmToolchain(17)
+}
+
 repositories {
     mavenCentral()
 }
@@ -25,13 +29,7 @@ dependencies {
 
 tasks {
     // Set the JVM compatibility versions
-    withType<JavaCompile> {
-        sourceCompatibility = "17"
-        targetCompatibility = "17"
-    }
-    withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-        kotlinOptions.jvmTarget = "17"
-    }
+    // Toolchain handles JVM target
 
     patchPluginXml {
         sinceBuild.set("241")

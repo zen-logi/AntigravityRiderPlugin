@@ -21,7 +21,7 @@ class GenerateCodeAction : AnAction() {
             } ?: return
 
         // 非同期で API 呼び出し（簡易的に同期実装）
-        val result = AntigravityService.sendMessage(prompt)
+        val result = kotlinx.coroutines.runBlocking { AntigravityService.instance.sendMessage(prompt) }
 
         WriteCommandAction.runWriteCommandAction(project) {
             val caret = editor.caretModel

@@ -32,35 +32,53 @@ class AntigravityService {
                 return@withContext "ログインしていません。「Google でサインイン」ボタンを押してログインしてください。"
             }
 
-            try {
-                val requestBody =
-                    """
-                    {
-                      "contents": [
-                        {"role":"user","parts":[{"text":"$prompt"}]}
-                      ]
+            var attempt = 0
+            val maxAttempts = 3
+            var currentDelay = 2000L
+
+            while (attempt < maxAttempts) {
+                try {
+                    val requestBody =
+                        """
+                        {
+                          "contents": [
+                            {"role":"user","parts":[{"text":"$prompt"}]}
+                          ]
+                        }
+                        """.trimIndent()
+
+                    val request =
+                        HttpRequest.newBuilder()
+                            .uri(URI.create(ENDPOINT))
+                            .header("Content-Type", "application/json; charset=UTF-8")
+                            .header("Authorization", "Bearer $token")
+                            .POST(HttpRequest.BodyPublishers.ofString(requestBody, StandardCharsets.UTF_8))
+                            .build()
+
+                    val response = httpClient.send(request, HttpResponse.BodyHandlers.ofString())
+
+                    if (response.statusCode() == 200) {
+                        return@withContext response.body()
+                    } else if (response.statusCode() == 429) {
+                        attempt++
+                        if (attempt < maxAttempts) {
+                            LOG.warn("Gemini API Rate Limit (429). Retrying in ${currentDelay}ms... (Attempt $attempt/$maxAttempts)")
+                            kotlinx.coroutines.delay(currentDelay)
+                            currentDelay *= 2
+                            continue
+                        } else {
+                            LOG.warn("Gemini API Rate Limit (429). Max retries exceeded.")
+                            return@withContext "エラー (429): リクエスト制限を超過しました。しばらく待ってから再試行してください。"
+                        }
+                    } else {
+                        LOG.warn("Gemini API Error: ${response.statusCode()} - ${response.body()}")
+                        return@withContext "エラー (${response.statusCode()}): ${response.body()}"
                     }
-                    """.trimIndent()
-
-                val request =
-                    HttpRequest.newBuilder()
-                        .uri(URI.create(ENDPOINT))
-                        .header("Content-Type", "application/json; charset=UTF-8")
-                        .header("Authorization", "Bearer $token")
-                        .POST(HttpRequest.BodyPublishers.ofString(requestBody, StandardCharsets.UTF_8))
-                        .build()
-
-                val response = httpClient.send(request, HttpResponse.BodyHandlers.ofString())
-
-                if (response.statusCode() == 200) {
-                    return@withContext response.body()
-                } else {
-                    LOG.warn("Gemini API Error: ${response.statusCode()} - ${response.body()}")
-                    return@withContext "エラー (${response.statusCode()}): ${response.body()}"
+                } catch (e: Exception) {
+                    LOG.error("Failed to call Gemini API", e)
+                    return@withContext "エラーが発生しました: ${e.message}"
                 }
-            } catch (e: Exception) {
-                LOG.error("Failed to call Gemini API", e)
-                return@withContext "エラーが発生しました: ${e.message}"
             }
+            return@withContext "予期せぬエラーが発生しました。"
         }
 }
